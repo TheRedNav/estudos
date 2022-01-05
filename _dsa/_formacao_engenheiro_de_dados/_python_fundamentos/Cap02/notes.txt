@@ -1,0 +1,6 @@
+Python é uma linguagem interpretada, o que significa que ela precisa de um programa para interpretar
+3 modos
+    shell
+    script - arquivos
+    interativo - jupyter
+Identação é importante!
