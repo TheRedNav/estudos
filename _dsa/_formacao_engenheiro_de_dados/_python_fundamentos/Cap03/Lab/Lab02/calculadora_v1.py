@@ -6,17 +6,11 @@
 
 print("\n******************* Python Calculator *******************")
 
-
-
-
 print("\n\nSelecione o número da operação desejada:\n\n")
 
 print("1 - Soma\n2 - Subtração\n3 - Multiplicação\n4 - Divisão\n\n\n ")
 
-
 opcao = input("Digite o número da opção desejada (1, 2, 3 ou 4): ")
-
-
 
 def adicao():
     numero_1 = input("Digite o primeiro número: ")
