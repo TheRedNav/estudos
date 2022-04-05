@@ -8,6 +8,7 @@ print("\n******************* Python Calculator *******************")
 
 
 
+
 print("\n\nSelecione o número da operação desejada:\n\n")
 
 print("1 - Soma\n2 - Subtração\n3 - Multiplicação\n4 - Divisão\n\n\n ")
