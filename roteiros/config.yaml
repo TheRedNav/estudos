@@ -1,0 +1,13 @@
+kumuluzee:
+  name: br.com.dx.dev-test
+  artifactId: ${project.artifactId}
+  groupId: ${project.groupId}
+  version: ${project.version}
+  env:
+    name: test
+  datasources:
+    - jndi-name: jdbc/datasource
+      connection-url: jdbc:db2://meudatabase
+      driver-class: com.dx.mg2.jcc.DB2Driver
+      username: f1234567
+      password: 88888888

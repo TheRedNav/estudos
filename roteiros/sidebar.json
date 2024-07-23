@@ -1,0 +1,44 @@
+{
+  "title": "Cloud",
+  "sidebar": [
+    {
+      "label": "Como Começar",
+      "menus": [
+        {
+          "label": "Onboarding",
+          "path": "comunidade/Onboarding.md"
+        },
+        {
+          "label": "Trilhas Alura",
+          "path": "comunidade/TrilhasAlura.md"
+        }
+      ]
+    },
+    {
+      "label": "Roteiros",
+      "menus": [
+        {
+          "label": "Ambiente",
+          "path": "enxovalBB/Como_configurar_ambiente_local_dev.md"
+        },
+        {
+          "label": "Criar namespace",
+          "path": "ofertas/Como_gerenciar_microsservicos.md"
+        }
+      ]
+    },
+    {
+      "label": "Comunidade",
+      "menus": [
+        {
+          "label": "Issues",
+          "path": "comunidade/Issues.md"
+        },
+        {
+          "label": "Guilda Cloud",
+          "path": "comunidade/GuildasCloud.md"
+        }
+      ]
+    }
+  ]
+}

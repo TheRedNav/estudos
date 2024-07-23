@@ -1,0 +1,33 @@
+<!-- trecho do pom.xml com as dependências necessárias -->
+<?xml version="1.0"?>
+<project>
+  <properties>
+    <io.jsonwebtoken.jjwt.version>0.11.5</io.jsonwebtoken.jjwt.version>
+    <com.auth0.java-jwt.version>3.19.4</com.auth0.java-jwt.version>
+  </properties>
+
+  <dependencyManagement>
+  <dependencies>
+    <!-- Dependências do JWT para obter o token info-integração do curio -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>${io.jsonwebtoken.jjwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>${io.jsonwebtoken.jjwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <version>${io.jsonwebtoken.jjwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+      <version>${com.auth0.java-jwt.version}</version>
+    </dependency>
+  </dependencies>
+</project>

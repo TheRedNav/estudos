@@ -1,0 +1,30 @@
+{
+    "request": {
+      "method": "POST",
+      "url": "/op252416v1"
+    },
+    "response": {
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\n" +
+              " \"saida\": {\n" +
+              "   \"nomeRet\": \"NomeRet-teste\",\n" +
+              "   \"sitRet\": 204,\n" +
+              "   \"prfLocaRet\": 203,\n" +
+              "   \"edComisRet\": 201,\n" +
+              "   \"nmComisRet\": \"NmComisRet-teste\",\n" +
+              "   \"cdRfRet\": 202,\n" +
+              "   \"cdRoRet\": \"codigoRO-teste\"\n" +
+              " }, \n" +
+              " \"controle\": {\n" +
+              "   \"retCode\": 100,\n" +
+              "   \"sqlcode\": 101,\n" +
+              "   \"section\": \"section-teste\",\n" +
+              "   \"sqlca\": \"sqlca-teste\",\n" +
+              "   \"sqlcode2\": 102\n" +
+              " }\n" +
+              "}"
+    }
+  }
+  

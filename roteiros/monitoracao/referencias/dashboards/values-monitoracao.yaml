@@ -1,0 +1,266 @@
+prometheus:
+  ## Deploy de instancia Prometheus
+  enabled: true
+
+  ## Setar label(s) que será(ão) colocada(s) em todos os artefatos.
+  ## Estes labels permitem que o prometheus identifique/monitore a si mesmo (automonitoração)
+  ## Este valor não é obrigatório. Caso não inclua, serão colocados sigla e projeto. Para mais informações, verificar README.md
+  ## Atentar que o(s) label(s) deve(m) ser exatamente igual(is) a do serviceMonitorSelector mais embaixo.
+  commonLabels:
+    sigla: t99
+    projeto: monitortutorial
+
+  ## Habilitar criação de dashboard básico de monitoração prometheus para o grafana
+  defaultDashboardsEnabled: true
+
+  ## Habilitar criação das regras básicas para prometheus
+  defaultRules:
+    prometheus: true
+    ## As rulesAnnotations e rulesLabels são incluidas como identificação nos alarmes que serão gerados
+    rulesAnnotations:
+      clusterName: "desenvolvimento" #Identificação do cluster
+    rulesLabels:
+      sigla: t99
+      omi: sim
+      type: nuvem
+
+  ingress:
+    enabled: true
+    ## Hosts deve ser informado caso ingress seja habilitado.
+    hosts:
+      -  prometheus.t99.desenv.bb.com.br
+    ## Configuracao TLS para ingress do Prometheus
+    ## Secret deve ser criado manualmente no namespace
+    tls: []
+      # - secretName: certificado-desenv-tls
+      #   hosts:
+      #     - prometheus.xyz.ambiente.bb.com.br
+
+  ## Prometheus StorageSpec para dados persistentes
+  ## ref: https://github.com/coreos/prometheus /blob/master/Documentation/user-guides/storage.md
+  prometheusSpec:
+    storageSpec:
+      enabled: true
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nas-client
+          resources:
+            requests:
+              storage: 1Gi
+
+    ## O parâmetro de matchLabels define qual(is) label(s) o prometheus irá procurar para monitorar
+    ## Este valor não é obrigatório. Caso não inclua, serão colocados sigla e projeto. Para mais informações, verificar README.md
+    ## Os labels devem ser os mesmos setados no "commomLabels" (charts infra) ou "labels" do serviceMonitor (bb-aplic)
+    serviceMonitorSelector:
+       matchLabels:
+         sigla: t99
+         projeto: monitortutorial
+
+    ## Define em qual namespace o prometheus deve procurar os labels para monitorar
+    serviceMonitorNamespaceSelector:
+       any: true
+
+    ## Solicitação de recursos de CPU e memória do pod do prometheus
+    resources:
+      limits:
+        cpu: 200m
+        memory: 400Mi
+      requests:
+        cpu: 100m
+        memory: 200Mi
+
+  ## Values para regras prometheus especificas da aplicação.
+  ## Disponibiliza regras customizadas para serem utilizadas no cluster.
+
+  additionalPrometheusRules:
+    - name: aplicacao<sigla>
+      groups:
+        - name: <sigla>-alerta-erro #Nome do agrupamento de regras
+          rules:
+          - alert: ExcessoErrosAplicacao
+            expr: sum(increase(application_http_response_counter_total{namespace="<sigla>-<namespace-name>", status="500"}[1h])) > 10
+            for: 1m
+            labels:
+              severity: critical
+              omi: sim
+              sigla: <sigla>
+              type: NUVEM
+            annotations:
+              message: 'Alta Quantidade de erros 500 por hora - Erro Interno'
+              runbook_url: 'https://fontes.intranet.bb.com.br/<sigla>/publico/docs/tree/master/<sigla>-monitor/runbook/ExcessoErrosAplicacao.runbook.md'
+              clusterName: 'DESENVOLVIMENTO'
+
+alertmanager:
+  ## Values minimo para alert manager.
+  ## Declara as variaveis minimas a serem passadas para utilização da oferta do alert manager.
+
+  ## Deploy alertmanager
+  enabled: true
+
+  ## Setar sigla para que prometheus idetifique o alertmanager como target
+  commonLabels:
+    sigla: t99
+    projeto: monitortutorial
+
+  ## Diretivas para configuracao do Alertmanager
+  ## ref: https://prometheus.io/docs/alerting/configuration/#configuration-file
+  ##      https://prometheus.io/webtools/alerting/routing-tree-editor/
+
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['job']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+      receiver: 'null' #Receiver padrão
+      routes:
+      - receiver: 'null'
+        match:
+          alertname: Watchdog
+      ##Para adicionar o router do OMI/monitoracao GPROM descomentar abaixo.
+      - receiver: omi
+        match:
+          omi: "sim"
+        continue: true
+      ##Para adicionar o router do MSTeams.
+      - receiver: msteams
+        match:
+          msteams: "sim"
+        continue: true
+    receivers:
+    - name: 'null'
+    #Habilitar OMI/monitoracao GPROM como receiver
+    - name: 'omi'
+      webhook_configs:
+        - url: http://webhook-snmp.psc-proxy.svc.cluster.local #Nao alterar esta URL
+    #Habilitar MSTeams como receiver
+    - name: 'msteams'
+      webhook_configs:
+        - url: http://alertmanager-receiver-msteams #Nao alterar esta URL
+
+  ingress:
+    enabled: true
+    ## Hosts deve ser informado caso ingress seja habilitado.
+    hosts:
+      - alertmanager.t99.desenv.bb.com.br
+    ## Configuracao TLS para ingress do Alertmanager
+    ## Secret deve ser criado manualmente no namespace
+
+    tls: []
+      # - secretName: <certificado>-desenv-tls
+      #   hosts:
+      #     -  alertmanager.xyz.ambiente.bb.com.br
+
+    ## Storage é a definição de como storage será utilizado pelas instancias Alertmanager.
+    ## ref: https://github.com/coreos/prometheus /blob/master/Documentation/user-guides/storage.md
+
+  alertmanagerSpec:
+    persistence:
+      enabled: false
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nas-client
+          resources:
+            requests:
+              storage: 1Gi
+
+
+grafana:
+  enabled: true
+
+  ingress:
+    enabled: true
+    hosts:
+      - monitor.t99.desenv.bb.com.br
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - grafana.xyz.ambiente.bb.com.br
+
+  plugins:
+    list: []
+  ## Plugins disponíveis para instalação, apenas descomentar
+        # - calheatmap/cal-heatmap
+        # - carpetplot/carpet-plot
+        # - citilogicsgeoloop/CitiLogics-citilogics-geoloop-panel-5ee83ae
+        # - clockpanel/grafana-clock-panel-ac968f7
+        # - datatable/briangann-grafana-datatable-panel-72dc7c5
+        # - diagrampannel/jdbranham-grafana-diagram-4406897
+        # - discrete/NatelEnergy-grafana-discrete-panel-5e8e975
+        # - heatmap/savantly-net-grafana-heatmap-d2244ab
+        # - mongodb/mongodb-grafana
+        # - parityreport/zuburqan-grafana-parity-report-ec25fd6
+        # - pictureit/vbessler-grafana-pictureit-b62fe2b
+        # - piechart/pie-chart
+        # - radar/snuids-grafana-radar-panel-d0ca5fe
+        # - sentinl/sentinl-v6.4.2
+        # - worldmappanel/worldmap-panel
+        # - yesoreyeram/yesoreyeram-boomtable-panel
+        # - flant/grafana-statusmap
+        # - alexanderzobnin/grafana-zabbix
+
+  persistence:
+    enabled: false
+    storageClassName: nas-client
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    # annotations: {}
+    # subPath: ""
+    # existingClaim:
+
+  # # Se quiser setar uma senha e um login de admin descomentar abaixo
+  # adminUser: admin
+  # adminPassword: strongpassword
+  ldapBB:
+    # # Configuração de papel para admin do Grafana.
+    # # O papel padrão é o ALMFD(sigla) no ldap do ambiente, exemplo em des vai ser acesso no ldap de desenvolvimento.
+    # # Caso haja necessidade de alteração, o papel especificado será utilizado, nos casos que nao existem o papel criado.
+    # # Exemplo:
+    # # papel: YYYXXX01
+    # # Será configurado grafana com admin para o papel YYYXXX01, grupo YYY para o ldap desse ambiente.
+    # #
+    # papel: YYYXXX01
+  resources:
+    limits:
+      cpu: 200m
+      memory: 400Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+  dashboards:
+    default: {}
+      # # Dashboard padrão recursos de namespace
+      # # Para utilizar dashboards provisionados no bucket Openstack, utilize o padrão abaixo.
+      # # Resumo dos namespace da sigla
+      # sigla-namespace:
+      #   bucket: default/k8s-visao-geral.json
+      # # Resumo da infra alocado para sigla
+      # sigla-cluster-infra:
+      #   bucket: default/k8s-visao-cluster.json
+      # # Resumo dos alertas e monitoracao da sigla
+      # sigla-monitor:
+      #   bucket: default/arq3-monitor.json
+      # # Painel com as transacoes do curio
+      # sigla-curio:
+      #   bucket: default/arq3-curio.json
+      # # Dashboard padrão para quem tem o b5 na aplicacao
+      # bigBrother:
+      #   bucket: default/bb-grafana.json
+      # # Caso queira fornecer uma URL para download de dashboards, utilize o exemplo:
+      # gsti:
+      #   url: http://atf.intranet.bb.com.br/artifactory/bb-binarios-local/sgs/grafana-dashboard/alertmanager-receiver-gsti/0.0.11/gsti.json
+      # sigla-namespace-pod:
+      #   bucket: default/k8s-resources-pod.json
+      # # Resumo da monitoracao no pod
+dnsservice:
+  urls:
+  # Padrão para desenvolvimento
+  # subdominio . sigla . desenv.bb.com.br
+      - monitor.t99.desenv.bb.com.br
+      - prometheus.t99.desenv.bb.com.br
+      - alertmanager.t99.desenv.bb.com.br

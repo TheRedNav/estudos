@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration name="wbb-validar">
+    <Appenders>
+        <Console name="consoleINJSON" target="SYSTEM_OUT">
+            <MarkerFilter marker="LOG_IN_JSON" onMatch="DENY" onMismatch="ACCEPT"/>
+            <PatternLayout pattern="{&quot;level&quot;:&quot;%level&quot;, &quot;ts&quot;:&quot;%d{yyyy-MM-dd HH:mm:ss.SSSSSS}&quot;, &quot;Thread&quot;:&quot;%T&quot;, &quot;logger&quot;:&quot;%logger&quot;, &quot;content&quot;: %m }%n"/>
+        </Console>
+
+        <Console name="consoleTOJSON" target="SYSTEM_OUT">
+            <MarkerFilter marker="LOG_IN_JSON" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="{&quot;level&quot;:&quot;%level&quot;, &quot;ts&quot;:&quot;%d{yyyy-MM-dd HH:mm:ss.SSSSSS}&quot;, &quot;Thread&quot;:&quot;%T&quot;, &quot;logger&quot;:&quot;%logger&quot;, &quot;content&quot;: {&quot;message&quot;:&quot;%m&quot; }%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="consoleINJSON"/>
+            <AppenderRef ref="consoleTOJSON"/>
+        </Root>
+    </Loggers>
+</Configuration>

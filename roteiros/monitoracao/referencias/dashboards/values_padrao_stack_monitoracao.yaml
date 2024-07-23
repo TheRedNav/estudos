@@ -1,0 +1,210 @@
+---
+alertmanager:
+  ## Values minimo para alert manager.
+  ## Declara as variaveis minimas a serem passadas para utilização da oferta do alert manager.
+
+  ## Deploy alertmanager
+
+  enabled: true
+
+  ## Setar sigla para que prometheus idetifique o alertmanager como target
+  commonLabels:
+    sigla: <sigla>
+    projeto: guilda
+
+  ## Diretivas para configuracao do Alertmanager
+  ## ref: https://prometheus.io/docs/alerting/configuration/#configuration-file
+  ##      https://prometheus.io/webtools/alerting/routing-tree-editor/
+
+  config:
+    global:
+      resolve_timeout: 4m
+    route:
+      group_by: ['job']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+      receiver: 'null' #Receiver padrão
+      routes:
+      - receiver: 'null'
+        match:
+          alertname: Watchdog
+      # ##Para adicionar o router do Rocketchat, descomentar abaixo.
+      #- receiver: rocketchat
+      #  match:
+      #    rocketchat: "sim"
+      #  continue: true
+      # ##Para adicionar o router do OMI/monitoracao GPROM descomentar abaixo.
+      #- receiver: omi
+      #  match:
+      #    omi: "sim"
+      #  continue: true
+      # ##Para adicionar o router do MSTeams.
+      #- receiver: msteams
+      #  match:
+      #    msteams: "sim"
+      #  continue: true
+    receivers:
+    - name: 'null'
+    ##Habilitar RocketChat como receiver
+    #- name: 'rocketchat'
+    #  webhook_configs:
+    #    - url: <rocketchat_webhook> #Solicitar para administrador a URL do webhook configurada no rocketchat
+    #      http_config:
+    #        tls_config:
+    #          insecure_skip_verify: true
+    ##Habilitar OMI/monitoracao GPROM como receiver
+    #- name: 'omi'
+    #  webhook_configs:
+    #    - url: http://webhook-snmp.psc-proxy.svc.cluster.local #Nao alterar esta URL 
+    ##Habilitar MSTeams como receiver
+    #- name: 'msteams'
+    #  webhook_configs:
+    ## Essa é a URL local do receiver. a URI "connector" deve ser substituída
+    ## pelo valor que for declarado no deploy do receiver, em "connectors"
+    #    - url: http://alertmanager-receiver-msteams/connector #trocar "connector" pelo nome criado no values do msteams
+
+  ingress:
+    enabled: true
+    ## Hosts deve ser informado caso ingress seja habilitado.
+    hosts:
+      - alertmanager-guilda.<sigla>.desenv.bb.com.br
+    tls: []
+      # - secretName: <certificado>-desenv-tls
+      #   hosts:
+      #     -  url.ambiente.bb.com.br
+
+    ## Storage é a definição de como storage será utilizado pelas instancias Alertmanager.
+    ## ref: https://github.com/coreos/prometheus /blob/master/Documentation/user-guides/storage.md
+
+  alertmanagerSpec:
+    persistence:
+      enabled: false
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nas-client
+          resources:
+            requests:
+              storage: 1Gi
+dns-service:
+  urls:
+    - alertmanager-guilda.<sigla>.desenv.bb.com.br
+    - prometheus-guilda.<sigla>.desenv.bb.com.br
+    - monitor-guilda.<sigla>.desenv.bb.com.br
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    hosts:
+     - monitor-guilda.<sigla>.desenv.bb.com.br
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - url.ambiente.bb.com.br
+  plugins:
+    list: []
+      ## Plugins disponíveis para instalação, apenas descomentar
+      #- calheatmap/cal-heatmap
+      #- carpetplot/carpet-plot
+      #- citilogicsgeoloop/CitiLogics-citilogics-geoloop-panel-5ee83ae
+      #- clockpanel/grafana-clock-panel-ac968f7
+      #- datatable/briangann-grafana-datatable-panel-72dc7c5
+      #- diagrampannel/jdbranham-grafana-diagram-4406897
+      #- discrete/NatelEnergy-grafana-discrete-panel-5e8e975
+      #- heatmap/savantly-net-grafana-heatmap-d2244ab
+      #- mongodb/mongodb-grafana
+      #- parityreport/zuburqan-grafana-parity-report-ec25fd6
+      #- pictureit/vbessler-grafana-pictureit-b62fe2b
+      #- piechart/pie-chart
+      #- radar/snuids-grafana-radar-panel-d0ca5fe
+      #- sentinl/sentinl-v6.4.2
+      #- worldmappanel/worldmap-panel
+      #- yesoreyeram/yesoreyeram-boomtable-panel
+      #- flant/grafana-statusmap
+  dashboards:
+    default:
+  #    ## Dashboard padrão recursos de namespace
+      recursosNS:
+        enabled: false
+  #    ## Dashboard padrão prometheus
+      prometheus:
+        active: false
+  #    ## Dashboard padrão receiver omi
+      omi:
+        active: false
+  #    ## Dashboard padrão receiver MSTeams
+      msTeams:
+        active: false
+  
+  persistence:
+    enabled: true
+    storageClassName: nas-client
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    # annotations: {}
+    # subPath: ""
+    # existingClaim:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+prometheus:
+  ## Deploy de instancia Prometheus
+  enabled: true
+  ## Setar label(s) que será(ão) colocada(s) em todos os artefatos.
+  ## Estes labels permitem que o prometheus identifique/monitore a si mesmo (automonitoração)
+  ## Este valor não é obrigatório. Caso não inclua, serão colocados sigla e projeto. Para mais informações, verificar README.md
+  ## Atentar que o(s) label(s) deve(m) ser exatamente igual(is) a do serviceMonitorSelector mais embaixo.
+  commonLabels:
+    sigla: <sigla>
+    projeto: guilda
+  ## Habilitar criação de dashboard básico de monitoração prometheus para o grafana
+  defaultDashboardsEnabled: true
+  ## Habilitar criação das regras básicas para prometheus
+  defaultRules:
+    prometheus: true
+    ## As rulesAnnotations e rulesLabels são incluidas como identificação nos alarmes que serão gerados
+    rulesAnnotations: {}
+     # clusterName: "desenv.bb.com.br" #Identificação do cluster
+    rulesLabels: {}
+     # sigla: xyz
+     # omi: sim
+     # type: nuvem
+  ingress:
+    enabled: true
+    ## Hosts deve ser informado caso ingress seja habilitado.
+    hosts:
+      -  prometheus-guilda.<sigla>.desenv.bb.com.br
+    ## Configuracao TLS para ingress do Prometheus
+    ## Secret deve ser criado manualmente no namespace
+    tls: []
+      #- secretName: certificado-desenv-tls
+      #  hosts:
+      #    - prometheus-guilda.<sigla>.desenv.bb.com.br
+  ## Prometheus StorageSpec para dados persistentes
+  ## ref: https://github.com/coreos/prometheus /blob/master/Documentation/user-guides/storage.md
+  prometheusSpec:
+    storageSpec:
+      enabled: true
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nas-client
+          resources:
+            requests:
+              storage: 1Gi
+    ## O parâmetro de matchLabels define qual(is) label(s) o prometheus irá procurar para monitorar
+    ## Este valor não é obrigatório. Caso não inclua, serão colocados sigla e projeto. Para mais informações, verificar README.md
+    ## Os labels devem ser os mesmos setados no "commomLabels" (charts infra) ou "labels" do serviceMonitor (bb-aplic)
+    ## Define em qual namespace o prometheus deve procurar os labels para monitorar
+    serviceMonitorNamespaceSelector:
+      any: true
+    serviceMonitorSelector:
+      matchLabels:
+        sigla: <sigla>
+        projeto: guilda

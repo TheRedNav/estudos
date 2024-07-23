@@ -1,0 +1,42 @@
+## Configurando o projeto para utilizar o DB2/Oracle em ambiente de desenvolvimento, homologação e produção 
+
+Para executar o microserviço em ambiente de desenvolvimento, no Kubernetes, é necessário configurar os dados de conexão. Como estes dados incluem a chave e senha do usuário impessoal do DB2/Oracle, é necessário que seja feita através de uma secret no kubernets.
+
+Para usar esta abordagem, no values do seu projeto acrescente as seguintes variáveis no environment no container da sua aplicação: 
+
+```yaml
+        environments:
+          ...
+          - name: QUARKUS_DATASOURCE_URL
+            valueFrom:
+              secretKeyRef:
+                name: db2
+                key: DB_CONNECTION_URL
+          - name: QUARKUS_DATASOURCE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: db2
+                key: DB_USER
+          - name: QUARKUS_DATASOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db2
+                key: DB_PASSWORD
+          ...    
+```
+
+Para Oracle, trocar o name nos secrets de db2 para oracle.
+
+Para criar a secret, entre no Rancher [(https://caas.nuvem.bb.com.br) e para cada ambiente da sua aplicação (desenvolvimento, homologação, produção) adicione a uma secret com name db2/oracle e com as seguintes chave/valores:  
+
+*  `DB_CONNECTION_URL` : URL de conexão ao banco de dados:  
+  
+    * DB2: atentar-se aos endereços e ao padrão definido em https://fontes.intranet.bb.com.br/dev/publico/padroes/-/blob/master/conexao-db2.md 
+
+    * Desenvolvimento Oracle: ```jdbc:oracle:thin:@//exa01-scan.desenv.bb.com.br:1521/<base-aplicacao>```
+
+* `DB_USER` : Usuário Impessoal a ser usado quando a solicitação não vir do mobile  (ex: ```usuarioexemplo```)
+
+* `DB_PASSWORD` : Senha usuário Impessoal  (ex: ```12345678``` )
+
+[Passo a passo detalhado de criação de secret](https://fontes.intranet.bb.com.br/psc/publico/atendimento/-/blob/master/ROTEIROS.md#cria%C3%A7%C3%A3o-ou-altera%C3%A7%C3%A3o-de-secrets-no-rancher)

@@ -1,0 +1,24 @@
+{
+    "title": "Plataforma Cloud",
+    "project_id": 198,
+    "Group": [
+      {
+        "label": "Como Começar",
+        "path": "comunidade/Onboarding.md",
+        "description": "Adquira as habilidades e conhecimentos necessários para desenvolver na nuvem através das trilhas Alura e o nosso Onboarding.",
+        "icon": { "pack": "bbds-ui", "name": "app-menu" }
+      },
+      {
+        "label": "Roteiros",
+        "path": "enxovalBB/Como_configurar_ambiente_local_dev.md",
+        "description": "Descubra casos de uso de funcionalidades e ferramentas e encontre roteiros que ajudam a resolver problemas comuns enfrentados por desenvolvedores da nuvem.",
+        "icon": { "pack": "bbds-ui", "name": "app-menu" }
+      },
+      {
+        "label": "Comunidade",
+        "path": "comunidade/GuildasCloud.md",
+        "description": "Explore nossos canais de comunidade! Saiba como para participar das nossas Guildas e contatar o atendimento DEV.",
+        "icon": { "pack": "bbds-ui", "name": "app-menu" }
+        }     
+    ]
+}
